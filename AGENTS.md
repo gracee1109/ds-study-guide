@@ -33,7 +33,7 @@ This repository is a Traditional Chinese (zh-Hant-TW) study website for introduc
 - Unknown slug: show a friendly not-found state with a way home.
 - Navigation must be reflected in the URL hash and support browser back/forward.
 
-## 5. Content schema (MUST follow)
+## 5. Content schema 
 Each entry in `window.STUDY_TOPICS` in `data/topics.js` must be an object with exactly these fields:
 ```js
 {
