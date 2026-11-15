@@ -38,7 +38,7 @@
 **要在網站直接顯示 AI 批改結果時**：需設定 Cloudflare Workers（選配，可能發生 API 使用費）。
 
 1. 申請 Cloudflare Workers，並在本機安裝 Node.js。
-2. 打開專案的 `worker/wrangler.toml`，將 `ALLOWED_ORIGIN` 改成你的 GitHub Pages 網站的**來源**（例如 `https://yourname.github.io`，不含 repository 路徑）。如模型不可用，設定 `GEMINI_MODEL` 為帳號可用的模型。
+2. 打開專案的 `worker/wrangler.toml`，`ALLOWED_ORIGIN` 已設定為 `https://gracee1109.github.io`（不含 repository 路徑）。如模型不可用，設定 `GEMINI_MODEL` 為帳號可用的模型。
 3. 在 Terminal 執行：
    ```sh
    cd worker
@@ -51,3 +51,8 @@
 5. 到公開網頁答題，點選「AI 批改」，確認有分數、優點、改進建議與完整參考答案。
 
 ⚠️ Worker 的網址屬於公開 API。`ALLOWED_ORIGIN` 只限制一般瀏覽器的跨來源請求，**不是身分驗證或可靠的防濫用機制**。如果正式公開給多人使用，必須再設使用量上限、限速、濫用防護及費用預算；勿依賴 CORS 避免他人呼叫。示範用的批改不會儲存答案，且會將內容送交 Gemini API。
+
+## 本專案部署設定
+- GitHub Pages: https://gracee1109.github.io/ds-study-guide/
+- Worker 的 `ALLOWED_ORIGIN` 已依網站設定。
+- Worker 部署並設定 Secret 後，將其 workers.dev HTTPS URL 填入 `assets/config.js`，重新上傳此檔案。
