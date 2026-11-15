@@ -24,20 +24,6 @@ function renderHome() {
   }
   input.addEventListener('input', filter); filter();
 }
-function buildGradingPrompt(topic, studentAnswer) {
-  return `請扮演資料結構助教，依據題目與參考答案批改我的簡答題。請以繁體中文回覆，總分 10 分：觀念正確性 6 分、解釋完整性 3 分、術語精確性 1 分。依序提供：總分、正確之處、需要修正之處、如何改善、完整參考解答。請勿因為用詞與參考答案不同就扣分，應依語意判斷。\n\n章節：${topic.title}\n題目：${topic.quiz.question}\n參考答案：${topic.quiz.answer}\n我的回答：${studentAnswer}`;
-}
-function renderGradeResult(result) {
-  const score = Number(result.score);
-  const resultNode = document.getElementById('grade-result');
-  resultNode.hidden = false;
-  resultNode.innerHTML = `<h3>AI 批改：${Number.isFinite(score) ? escapeHtml(score) + ' / 10' : '已完成'}</h3>
-    <p><strong>正確之處：</strong>${escapeHtml(result.strengths || '未提供')}</p>
-    <p><strong>需要修正：</strong>${escapeHtml(result.improvements || '未提供')}</p>
-    <p><strong>改進建議：</strong>${escapeHtml(result.suggestion || '未提供')}</p>
-    <p><strong>參考解答：</strong>${escapeHtml(result.modelAnswer || '未提供')}</p>
-    <p class="grade-note">AI 評分僅供學習參考，可能發生誤判。</p>`;
-}
 function renderTopic(slug) {
   const topic = topics.find(t => t.slug === slug);
   if (!topic) {
@@ -50,52 +36,16 @@ function renderTopic(slug) {
     <div class="article-layout"><div class="article-body"><h2>核心觀念</h2>${topic.concepts.map((c, i) => `<section class="concept"><span class="concept-index">${String(i+1).padStart(2,'0')}</span><div><h3>${escapeHtml(c.heading)}</h3><p>${escapeHtml(c.body)}</p></div></section>`).join('')}
     <section class="quiz"><p class="eyebrow">QUICK CHECK</p><h2>自我測驗</h2><p class="question">${escapeHtml(topic.quiz.question)}</p>
     <label class="response-label" for="student-answer">我的回答（簡答）</label>
-    <textarea id="student-answer" rows="5" maxlength="2000" placeholder="先用自己的話回答，再交給 AI 批改。"></textarea>
-    <div class="quiz-actions"><button type="button" id="grade-button">AI 批改</button>
-    <button type="button" id="copy-grade" class="secondary-button">複製批改提示詞</button>
-    <button id="answer-toggle" class="secondary-button" type="button" aria-expanded="false">顯示解答</button></div>
-    <p class="grade-status" id="grade-status" aria-live="polite"></p>
-    <div class="grade-result" id="grade-result" aria-live="polite" hidden></div>
+    <textarea id="student-answer" rows="5" maxlength="2000" placeholder="先用自己的話回答，再對照參考解答檢查觀念。"></textarea>
+    <div class="quiz-actions"><button id="answer-toggle" type="button" aria-expanded="false">顯示參考解答</button></div>
     <div id="answer" class="answer" hidden>${escapeHtml(topic.quiz.answer)}</div></section></div>
     <aside class="exam-aside"><p class="eyebrow">EXAM NOTES</p><h2>常見考點</h2><ul>${topic.examPoints.map(p => `<li>${escapeHtml(p)}</li>`).join('')}</ul></aside></div>
   </article>`;
-  const input = document.getElementById('student-answer');
-  const grade = document.getElementById('grade-button');
-  const copy = document.getElementById('copy-grade');
-  const status = document.getElementById('grade-status');
-  const endpoint = (window.GRADING_API_ENDPOINT || '').trim();
-  grade.addEventListener('click', async () => {
-    const studentAnswer = input.value.trim();
-    if (!studentAnswer) { status.textContent = '請先填寫自己的答案。'; input.focus(); return; }
-    if (!endpoint) {
-      status.textContent = '尚未設定 AI 批改後端。請使用「複製批改提示詞」貼到 ChatGPT，或依 README 部署 Cloudflare Worker。';
-      return;
-    }
-    grade.disabled = true; status.textContent = '正在批改…';
-    document.getElementById('grade-result').hidden = true;
-    try {
-      const response = await fetch(endpoint, {
-        method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({topic: topic.title, question: topic.quiz.question, referenceAnswer: topic.quiz.answer, studentAnswer})
-      });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || 'AI 批改服務暫時無法使用');
-      renderGradeResult(payload);
-      status.textContent = '批改完成。';
-    } catch (error) { status.textContent = `批改失敗：${error.message}。仍可複製提示詞進行批改。`; }
-    finally { grade.disabled = false; }
-  });
-  copy.addEventListener('click', async () => {
-    const studentAnswer = input.value.trim();
-    if (!studentAnswer) { status.textContent = '請先填寫自己的答案。'; input.focus(); return; }
-    try { await navigator.clipboard.writeText(buildGradingPrompt(topic, studentAnswer)); status.textContent = '已複製，請貼到 ChatGPT 進行 AI 批改。'; }
-    catch { status.textContent = '瀏覽器無法存取剪貼簿，請於 HTTPS 網站開啟後重試。'; }
-  });
   const button = document.getElementById('answer-toggle');
   const answer = document.getElementById('answer');
   button.addEventListener('click', () => {
     answer.hidden = !answer.hidden;
-    button.textContent = answer.hidden ? '顯示解答' : '收起解答';
+    button.textContent = answer.hidden ? '顯示參考解答' : '收起參考解答';
     button.setAttribute('aria-expanded', String(!answer.hidden));
   });
 }
