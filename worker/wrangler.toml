@@ -1,0 +1,9 @@
+name = "ds-study-guide-grader"
+main = "index.js"
+compatibility_date = "2026-10-01"
+
+[vars]
+# Replace with the precise GitHub Pages origin, e.g. https://yourname.github.io
+ALLOWED_ORIGIN = "https://YOUR_USERNAME.github.io"
+# Use a Gemini model available to your API account.
+GEMINI_MODEL = "gemini-2.5-flash"
